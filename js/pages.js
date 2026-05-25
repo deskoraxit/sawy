@@ -2727,6 +2727,32 @@ const NAIL_COLOR_HEX = {
   morado: '#7b2cbf',
 };
 
+const AI_SUGGESTIONS = [
+  { nailType: 'almendradas', color: 'rojo', design: 'floral', label: 'Almendradas rojas florales' },
+  { nailType: 'ovaladas', color: 'rosa', design: 'minimalista', label: 'Ovaladas rosas minimalistas' },
+  { nailType: 'cuadradas', color: 'blanco', design: 'frances', label: 'Francesas cuadradas blancas' },
+  { nailType: 'almendradas', color: 'morado', design: 'frances', label: 'Almendradas morado frances' },
+  { nailType: 'ovaladas', color: 'azul', design: 'minimalista', label: 'Ovaladas azules minimalistas' },
+  { nailType: 'cuadradas', color: 'negro', design: 'floral', label: 'Cuadradas negras florales' },
+];
+
+function saveSearchHistory(nailType, color, design) {
+  try {
+    const entry = { nailType, color, design, timestamp: Date.now() };
+    let h = JSON.parse(localStorage.getItem('rec_history') || '[]');
+    const dup = (a) => a.nailType === entry.nailType && a.color === entry.color && a.design === entry.design;
+    h = h.filter((a) => !dup(a));
+    h.unshift(entry);
+    if (h.length > 10) h = h.slice(0, 10);
+    localStorage.setItem('rec_history', JSON.stringify(h));
+    return h;
+  } catch { return []; }
+}
+function loadSearchHistory() {
+  try { return JSON.parse(localStorage.getItem('rec_history') || '[]'); }
+  catch { return []; }
+}
+
 export function recommendationsPage() {
   const state = {
     step: 'form',
@@ -2737,6 +2763,7 @@ export function recommendationsPage() {
     loading: false,
     showCustom: { nailType: false, color: false, design: false },
     searchGen: 0,
+    history: loadSearchHistory(),
   };
 
   return {
@@ -2785,6 +2812,24 @@ export function recommendationsPage() {
         } catch { return false; }
       };
 
+      const applySuggestion = (s) => {
+        state.nailType = s.nailType;
+        state.color = s.color;
+        state.design = s.design;
+        state.showCustom = { nailType: false, color: false, design: false };
+        render();
+        setTimeout(searchPinterest, 350);
+      };
+
+      const applyHistory = (h) => {
+        state.nailType = h.nailType;
+        state.color = h.color;
+        state.design = h.design;
+        state.showCustom = { nailType: false, color: false, design: false };
+        render();
+        setTimeout(searchPinterest, 350);
+      };
+
       const searchPinterest = async () => {
         const gen = ++state.searchGen;
         const parts = [state.nailType, state.color, state.design].filter(Boolean);
@@ -2800,6 +2845,7 @@ export function recommendationsPage() {
           });
           if (gen !== state.searchGen) return;
           state.recommendations = recs;
+          state.history = saveSearchHistory(state.nailType, state.color, state.design);
         } catch (err) {
           if (gen !== state.searchGen) return;
           console.error(err);
@@ -2878,6 +2924,34 @@ export function recommendationsPage() {
             <div class="ai-chat-thread" id="rec-thread">
 
               ${state.step === 'form' ? `
+                ${state.history.length ? `
+                  <div class="ai-message ai-message-assistant fade-up" style="margin-bottom:-6px">
+                    <div class="ai-avatar" style="background:transparent;border:none;color:var(--muted);font-size:.7rem">↻</div>
+                    <div class="ai-history-bar">
+                      ${state.history.slice(0, 5).map((h) => `
+                        <button class="ai-history-chip" data-history="${escapeHTML(JSON.stringify(h)).replace(/"/g, '&quot;')}">
+                          ${escapeHTML(h.nailType || '')} ${escapeHTML(h.color || '')} ${escapeHTML(h.design || '')}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <div class="ai-message ai-message-assistant fade-up">
+                  <div class="ai-avatar">✨</div>
+                  <div class="ai-bubble" style="padding-bottom:10px">
+                    <div class="ai-q-label" style="font-size:.9rem;color:var(--primary-strong);margin-bottom:8px">Estilos que te recomendamos</div>
+                    <div class="ai-suggest-grid">
+                      ${AI_SUGGESTIONS.map((s) => `
+                        <button class="ai-suggest-card" data-suggestion="${escapeHTML(JSON.stringify(s)).replace(/"/g, '&quot;')}">
+                          <span class="ai-suggest-label">${escapeHTML(s.label)}</span>
+                          <span class="ai-suggest-arrow">→</span>
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+                </div>
+
                 <div class="ai-message ai-message-assistant fade-up">
                   <div class="ai-avatar">💅</div>
                   <div class="ai-bubble">
@@ -3048,6 +3122,24 @@ export function recommendationsPage() {
       setInterval(checkBridgeStatus, 15000);
 
       root.addEventListener('click', async (e) => {
+        const sug = e.target.closest('[data-suggestion]');
+        if (sug) {
+          try {
+            const data = JSON.parse(sug.dataset.suggestion);
+            applySuggestion(data);
+          } catch {}
+          return;
+        }
+
+        const hist = e.target.closest('[data-history]');
+        if (hist) {
+          try {
+            const data = JSON.parse(hist.dataset.history);
+            applyHistory(data);
+          } catch {}
+          return;
+        }
+
         const opt = e.target.closest('.ai-option');
         if (opt) {
           select(opt.dataset.field, opt.dataset.value);

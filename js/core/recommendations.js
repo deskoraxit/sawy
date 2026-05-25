@@ -406,14 +406,14 @@ function mapPixabayPhoto(photo, theme, query, index) {
 
 function mapPinterestPin(pin, theme, query, index) {
   return {
-    id: `pinterest-${hashString(pin.image || pin.url || `${query}-${index}`)}`,
-    nombre: theme?.label ? `${theme.label} · ${index + 1}` : `Pinterest ${index + 1}`,
-    descripción: pin.title || __getESDescription(pin, query) || query || 'Referencia encontrada en Pinterest.',
+    id: `rec-${hashString(pin.image || pin.url || `${query}-${index}`)}`,
+    nombre: theme?.label ? `${theme.label} · ${index + 1}` : `Diseño ${index + 1}`,
+    descripción: pin.title || __getESDescription(pin, query) || query || 'Diseño de uñas.',
     imagen: pin.image || '',
     dificultad: theme?.difficulty || 'Media',
     tiempoEstimado: theme?.time || '30 min',
-    categoria: theme?.label || 'Pinterest',
-    fuente: 'Pinterest',
+    categoria: theme?.label || 'Recomendación',
+    fuente: '',
     url: pin.url || '',
   };
 }

@@ -2736,6 +2736,7 @@ export function recommendationsPage() {
     recommendations: [],
     loading: false,
     showCustom: { nailType: false, color: false, design: false },
+    searchGen: 0,
   };
 
   return {
@@ -2744,7 +2745,7 @@ export function recommendationsPage() {
         <div class="page-head">
           <div>
             <h1 class="page-title">Recomendaciones</h1>
-            <p class="page-subtitle">Elige las opciones y busca inspiración en Pinterest</p>
+            <p class="page-subtitle">Encuentra el diseño perfecto para tus uñas</p>
           </div>
           <span class="bridge-status" id="bridge-status">⏳</span>
         </div>
@@ -2752,7 +2753,40 @@ export function recommendationsPage() {
       </div>
     `,
     bind(root) {
+      const saveResultsToCache = () => {
+        try {
+          localStorage.setItem('rec_cache', JSON.stringify({
+            nailType: state.nailType,
+            color: state.color,
+            design: state.design,
+            recommendations: state.recommendations,
+            step: 'results',
+            savedAt: Date.now(),
+          }));
+        } catch {}
+      };
+
+      const loadResultsFromCache = () => {
+        try {
+          const raw = localStorage.getItem('rec_cache');
+          if (!raw) return false;
+          const data = JSON.parse(raw);
+          const age = Date.now() - (data.savedAt || 0);
+          if (age > 15 * 60 * 1000) {
+            localStorage.removeItem('rec_cache');
+            return false;
+          }
+          state.nailType = data.nailType || '';
+          state.color = data.color || '';
+          state.design = data.design || '';
+          state.recommendations = Array.isArray(data.recommendations) ? data.recommendations : [];
+          state.step = 'results';
+          return true;
+        } catch { return false; }
+      };
+
       const searchPinterest = async () => {
+        const gen = ++state.searchGen;
         const parts = [state.nailType, state.color, state.design].filter(Boolean);
         const query = `uñas ${parts.join(' ')}`;
         state.loading = true;
@@ -2760,17 +2794,21 @@ export function recommendationsPage() {
         render();
 
         try {
-          state.recommendations = await getRecommendations({
+          const recs = await getRecommendations({
             userId: getCurrentUser().id,
             preferences: query,
           });
+          if (gen !== state.searchGen) return;
+          state.recommendations = recs;
         } catch (err) {
+          if (gen !== state.searchGen) return;
           console.error(err);
         }
 
         state.loading = false;
         state.step = 'results';
         render();
+        saveResultsToCache();
       };
 
       const setCustomValue = (field, text) => {
@@ -2949,7 +2987,7 @@ export function recommendationsPage() {
                           <article class="ai-rec-card js-rec-card" data-id="${escapeHTML(rec.id || '')}">
                             <img class="js-rec-preview" src="${escapeHTML(rec.imagen || '')}" alt="${escapeHTML(rec.nombre || 'Referencia')}" loading="lazy">
                             <div class="ai-rec-overlay">
-                              <span class="badge neutral">${escapeHTML(rec.fuente || 'Pinterest')}</span>
+                              <span class="badge neutral">Inspiración</span>
                               <button class="btn sm primary js-save-rec" type="button" data-id="${escapeHTML(rec.id || '')}">Guardar</button>
                             </div>
                           </article>
@@ -2974,6 +3012,10 @@ export function recommendationsPage() {
             </div>
           </section>`;
       };
+
+      if (loadResultsFromCache()) {
+        render();
+      }
 
       const checkBridgeStatus = async () => {
         const badge = root.querySelector('#bridge-status');
@@ -3011,6 +3053,7 @@ export function recommendationsPage() {
         }
 
         if (e.target.closest('#start-over')) {
+          state.searchGen++;
           state.step = 'form';
           state.nailType = '';
           state.color = '';
@@ -3018,6 +3061,7 @@ export function recommendationsPage() {
           state.recommendations = [];
           state.loading = false;
           state.showCustom = { nailType: false, color: false, design: false };
+          localStorage.removeItem('rec_cache');
           render();
           return;
         }
@@ -3043,7 +3087,7 @@ export function recommendationsPage() {
               userId,
               name: rec.nombre || 'Diseño',
               image: rec.imagen || '',
-              source: 'Pinterest',
+              source: 'Inspiración',
               sourceUrl: rec.url || '',
               categoria: rec.categoria || 'Recomendación',
             });

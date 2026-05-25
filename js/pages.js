@@ -2885,7 +2885,7 @@ export function recommendationsPage() {
                   ` : `
                     <div class="ai-bubble">
                       <strong>No encontré resultados</strong>
-                      <span>Prueba con otras opciones o revisa que el bridge de Pinterest esté activo.</span>
+                      <span>Prueba con otras opciones. Abre la consola (F12) para ver el diagnóstico.</span>
                     </div>
                   `}
                 </div>

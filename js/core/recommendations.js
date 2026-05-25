@@ -506,8 +506,12 @@ async function searchNetlifyFunction(query, theme) {
   if (!fnUrl) return [];
   const url = `${String(fnUrl).replace(/\/$/, '')}?q=${encodeURIComponent(query)}`;
   const data = await fetchJson(url);
+  console.log('[NetlifyFn] respuesta:', data);
   const pins = Array.isArray(data?.items) ? data.items : [];
-  if (!pins.length) return [];
+  if (!pins.length) {
+    console.warn('[NetlifyFn] sin resultados. Diagnóstico:', data?.diag || data?.note || '—');
+    return [];
+  }
   return pins
     .map((pin, index) => mapPinterestPin(pin, theme, query, index))
     .filter((item) => item.imagen);

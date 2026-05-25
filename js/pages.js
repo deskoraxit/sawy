@@ -2728,12 +2728,12 @@ const NAIL_COLOR_HEX = {
 };
 
 const AI_SUGGESTIONS = [
-  { nailType: 'almendradas', color: 'rojo', design: 'floral', label: 'Almendradas rojas florales' },
-  { nailType: 'ovaladas', color: 'rosa', design: 'minimalista', label: 'Ovaladas rosas minimalistas' },
-  { nailType: 'cuadradas', color: 'blanco', design: 'frances', label: 'Francesas cuadradas blancas' },
-  { nailType: 'almendradas', color: 'morado', design: 'frances', label: 'Almendradas morado frances' },
-  { nailType: 'ovaladas', color: 'azul', design: 'minimalista', label: 'Ovaladas azules minimalistas' },
-  { nailType: 'cuadradas', color: 'negro', design: 'floral', label: 'Cuadradas negras florales' },
+  { nailType: 'almendradas', color: 'rojo', design: 'floral', label: 'Almendradas rojas florales', image: 'https://i.pinimg.com/736x/c6/eb/dc/c6ebdcc98e9c7e9e2390fbc1ab335d40.jpg' },
+  { nailType: 'ovaladas', color: 'rosa', design: 'minimalista', label: 'Ovaladas rosas minimalistas', image: 'https://i.pinimg.com/736x/49/88/ec/4988ec2a2be1d2d8de1932da07ad0710.jpg' },
+  { nailType: 'cuadradas', color: 'blanco', design: 'frances', label: 'Cuadradas blancas frances', image: 'https://i.pinimg.com/736x/f3/8b/f6/f38bf606962a0eef3cdfe5a1837a1bdb.jpg' },
+  { nailType: 'almendradas', color: 'morado', design: 'frances', label: 'Almendradas morado frances', image: 'https://i.pinimg.com/736x/e3/32/02/e33202e6838574d9e626ebefdc0aba6d.jpg' },
+  { nailType: 'ovaladas', color: 'azul', design: 'minimalista', label: 'Ovaladas azules minimalistas', image: 'https://i.pinimg.com/736x/90/c6/a7/90c6a7dbdb6575c52c889ee3514e524c.jpg' },
+  { nailType: 'cuadradas', color: 'negro', design: 'floral', label: 'Cuadradas negras florales', image: 'https://i.pinimg.com/736x/05/72/c0/0572c0dbdba7a9bc3b313fb26b854b1e.jpg' },
 ];
 
 function saveSearchHistory(nailType, color, design) {
@@ -2944,8 +2944,8 @@ export function recommendationsPage() {
                     <div class="ai-suggest-grid">
                       ${AI_SUGGESTIONS.map((s) => `
                         <button class="ai-suggest-card" data-suggestion="${escapeHTML(JSON.stringify(s)).replace(/"/g, '&quot;')}">
+                          <span class="ai-suggest-img" style="background-image:url(${escapeHTML(s.image)})"></span>
                           <span class="ai-suggest-label">${escapeHTML(s.label)}</span>
-                          <span class="ai-suggest-arrow">→</span>
                         </button>
                       `).join('')}
                     </div>

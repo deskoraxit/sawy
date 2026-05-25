@@ -949,6 +949,9 @@ html[data-theme="dark"] .auth-card .btn.primary:hover{box-shadow:0 18px 28px rgb
 .stagger-4{animation-delay:.16s}
 
 /* ── Rec section compact override ── */
+.rec-full{
+  max-width:520px;
+}
 .rec-full .page-head{
   margin-bottom:14px;
 }
@@ -995,7 +998,7 @@ html[data-theme="dark"] .rec-search-tag{
 /* ── Hero suggestion card ── */
 .rec-suggest-card{
   display:grid;
-  grid-template-columns:1fr 200px;
+  grid-template-columns:280px 200px;
   gap:0;
   background:#fff;
   border-radius:16px;
@@ -1043,7 +1046,6 @@ html[data-theme="dark"] .rec-search-tag{
   color:#64748b;
   line-height:1.4;
   margin-bottom:10px;
-  max-width:280px;
 }
 .rec-suggest-badges{
   display:flex;

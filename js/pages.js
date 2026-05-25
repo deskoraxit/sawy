@@ -2700,36 +2700,32 @@ function pinterestLoginUrl() {
 const NAIL_SHAPES = [
   { value: 'ovaladas', label: 'Ovaladas' },
   { value: 'cuadradas', label: 'Cuadradas' },
-  { value: 'almendra', label: 'Almendra' },
-  { value: 'stiletto', label: 'Stiletto' },
-  { value: 'coffin', label: 'Coffin' },
   { value: 'almendradas', label: 'Almendradas' },
 ];
 
 const NAIL_COLORS = [
-  { value: 'nude', label: 'Nude' },
   { value: 'rojo', label: 'Rojo' },
   { value: 'rosa', label: 'Rosa' },
   { value: 'blanco', label: 'Blanco' },
   { value: 'negro', label: 'Negro' },
-  { value: 'frances', label: 'Francés' },
-  { value: 'transparente', label: 'Transparente' },
   { value: 'azul', label: 'Azul' },
   { value: 'morado', label: 'Morado' },
-  { value: 'dorado', label: 'Dorado' },
 ];
 
 const NAIL_DESIGNS = [
-  { value: 'frances', label: 'Francés' },
-  { value: 'minimalista', label: 'Minimalista' },
   { value: 'floral', label: 'Floral' },
-  { value: 'geometrico', label: 'Geométrico' },
-  { value: 'brillos', label: 'Brillos' },
-  { value: 'glitter', label: 'Glitter' },
-  { value: 'marmol', label: 'Mármol' },
-  { value: 'animal print', label: 'Animal Print' },
-  { value: '', label: 'Sin diseño' },
+  { value: 'minimalista', label: 'Minimalista' },
+  { value: 'frances', label: 'Frances' },
 ];
+
+const NAIL_COLOR_HEX = {
+  rojo: '#e63946',
+  rosa: '#ff8fab',
+  blanco: '#f1faee',
+  negro: '#1d3557',
+  azul: '#457b9d',
+  morado: '#7b2cbf',
+};
 
 export function recommendationsPage() {
   const state = {
@@ -2739,6 +2735,7 @@ export function recommendationsPage() {
     design: '',
     recommendations: [],
     loading: false,
+    showCustom: { nailType: false, color: false, design: false },
   };
 
   return {
@@ -2776,9 +2773,44 @@ export function recommendationsPage() {
         render();
       };
 
+      const setCustomValue = (field, text) => {
+        const trimmed = text.trim();
+        if (!trimmed) return;
+        state[field] = trimmed;
+        state.showCustom[field] = false;
+        render();
+
+        if (field === 'nailType') {
+          setTimeout(() => {
+            const el = root.querySelector('#q-color');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        }
+        if (field === 'color') {
+          setTimeout(() => {
+            const el = root.querySelector('#q-design');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        }
+        if (field === 'design') {
+          setTimeout(searchPinterest, 300);
+        }
+      };
+
       const select = (field, value) => {
+        if (value === '__custom__') {
+          state.showCustom[field] = true;
+          state[field] = '';
+          render();
+          setTimeout(() => {
+            const inp = root.querySelector(`#custom-${field}`);
+            if (inp) inp.focus();
+          }, 50);
+          return;
+        }
         if (value === state[field]) return;
         state[field] = value;
+        state.showCustom[field] = false;
         render();
 
         if (field === 'nailType') {
@@ -2811,37 +2843,79 @@ export function recommendationsPage() {
                 <div class="ai-message ai-message-assistant">
                   <div class="ai-avatar">💅</div>
                   <div class="ai-bubble">
-                    <div class="ai-q-label">¡Hola! Cuéntame qué uñas quieres</div>
-                    <div class="ai-q-sub">Selecciona las opciones y buscaré imágenes ideales para ti.</div>
+                    <div class="ai-q-label">Hola! Cuentame que unas quieres</div>
+                    <div class="ai-q-sub">Selecciona una opcion o escribe la tuya. Buscare las mejores imagenes.</div>
 
                     <div id="q-type">
-                      <div style="font-weight:700;margin:12px 0 6px">1. ¿Qué forma prefieres?</div>
+                      <div class="ai-q-num">1. Que forma prefieres?</div>
                       <div class="ai-options">
                         ${NAIL_SHAPES.map((s) => `
                           <button class="ai-option${state.nailType === s.value ? ' selected' : ''}" data-field="nailType" data-value="${s.value}">${s.label}</button>
                         `).join('')}
+                        <button class="ai-option ai-option-other${state.showCustom.nailType ? ' selected' : ''}" data-field="nailType" data-value="__custom__">Otra...</button>
                       </div>
+                      ${state.showCustom.nailType ? `
+                        <div class="ai-custom-wrap">
+                          <input class="ai-custom-input" id="custom-nailType" type="text" placeholder="Escribe la forma que quieres" maxlength="40" autofocus>
+                          <p class="ai-custom-hint">Presiona Enter para confirmar</p>
+                        </div>
+                      ` : ''}
+                      ${!state.showCustom.nailType && state.nailType && !NAIL_SHAPES.some((s) => s.value === state.nailType) ? `
+                        <div class="ai-custom-value">
+                          Elegiste: <strong>${escapeHTML(state.nailType)}</strong>
+                          <button class="ai-option ai-option-other selected" data-field="nailType" data-value="__custom__">Cambiar</button>
+                        </div>
+                      ` : ''}
                     </div>
 
                     ${q1done ? `
                       <div id="q-color">
-                        <div style="font-weight:700;margin:16px 0 6px">2. ¿Qué color te gusta?</div>
+                        <div class="ai-q-num">2. Que color te gusta?</div>
                         <div class="ai-options">
                           ${NAIL_COLORS.map((c) => `
-                            <button class="ai-option${state.color === c.value ? ' selected' : ''}" data-field="color" data-value="${c.value}">${c.label}</button>
+                            <button class="ai-option ai-color-opt${state.color === c.value ? ' selected' : ''}" data-field="color" data-value="${c.value}">
+                              <span class="ai-color-dot" style="background:${NAIL_COLOR_HEX[c.value] || '#ccc'}"></span>
+                              ${c.label}
+                            </button>
                           `).join('')}
+                          <button class="ai-option ai-option-other${state.showCustom.color ? ' selected' : ''}" data-field="color" data-value="__custom__">Otra...</button>
                         </div>
+                        ${state.showCustom.color ? `
+                          <div class="ai-custom-wrap">
+                            <input class="ai-custom-input" id="custom-color" type="text" placeholder="Escribe el color que quieres" maxlength="40" autofocus>
+                            <p class="ai-custom-hint">Presiona Enter para confirmar</p>
+                          </div>
+                        ` : ''}
+                        ${!state.showCustom.color && state.color && !NAIL_COLORS.some((c) => c.value === state.color) ? `
+                          <div class="ai-custom-value">
+                            Elegiste: <strong>${escapeHTML(state.color)}</strong>
+                            <button class="ai-option ai-option-other selected" data-field="color" data-value="__custom__">Cambiar</button>
+                          </div>
+                        ` : ''}
                       </div>
                     ` : ''}
 
                     ${q2done ? `
                       <div id="q-design">
-                        <div style="font-weight:700;margin:16px 0 6px">3. ¿Algún diseño especial?</div>
+                        <div class="ai-q-num">3. Que diseno prefieres?</div>
                         <div class="ai-options">
                           ${NAIL_DESIGNS.map((d) => `
                             <button class="ai-option${state.design === d.value ? ' selected' : ''}" data-field="design" data-value="${d.value}">${d.label}</button>
                           `).join('')}
+                          <button class="ai-option ai-option-other${state.showCustom.design ? ' selected' : ''}" data-field="design" data-value="__custom__">Otra...</button>
                         </div>
+                        ${state.showCustom.design ? `
+                          <div class="ai-custom-wrap">
+                            <input class="ai-custom-input" id="custom-design" type="text" placeholder="Escribe el diseno que buscas" maxlength="40" autofocus>
+                            <p class="ai-custom-hint">Presiona Enter para confirmar</p>
+                          </div>
+                        ` : ''}
+                        ${!state.showCustom.design && state.design && !NAIL_DESIGNS.some((d) => d.value === state.design) ? `
+                          <div class="ai-custom-value">
+                            Elegiste: <strong>${escapeHTML(state.design)}</strong>
+                            <button class="ai-option ai-option-other selected" data-field="design" data-value="__custom__">Cambiar</button>
+                          </div>
+                        ` : ''}
                       </div>
                     ` : ''}
                   </div>
@@ -2852,8 +2926,8 @@ export function recommendationsPage() {
                 <div class="ai-message ai-message-assistant">
                   <div class="ai-avatar">⏳</div>
                   <div class="ai-bubble">
-                    <strong>Buscando en Pinterest...</strong>
-                    <span>Espera un momento mientras encuentro las mejores referencias.</span>
+                    <strong>Buscando imagenes...</strong>
+                    <span>Espera un momento, ya casi.</span>
                   </div>
                 </div>
               ` : ''}
@@ -2884,8 +2958,8 @@ export function recommendationsPage() {
                     </div>
                   ` : `
                     <div class="ai-bubble">
-                      <strong>No encontré resultados</strong>
-                      <span>Prueba con otras opciones. Abre la consola (F12) para ver el diagnóstico.</span>
+                      <strong>No encontre resultados</strong>
+                      <span>Prueba con otras opciones o intenta de nuevo.</span>
                     </div>
                   `}
                 </div>
@@ -2943,6 +3017,7 @@ export function recommendationsPage() {
           state.design = '';
           state.recommendations = [];
           state.loading = false;
+          state.showCustom = { nailType: false, color: false, design: false };
           render();
           return;
         }
@@ -2983,6 +3058,16 @@ export function recommendationsPage() {
           const id = card?.dataset.id || previewImg?.closest('.js-rec-card')?.dataset.id;
           const rec = state.recommendations.find((r) => r.id === id);
           if (rec) openRecommendationPreview(rec);
+        }
+      });
+
+      root.addEventListener('keydown', (e) => {
+        const inp = e.target.closest('.ai-custom-input');
+        if (!inp) return;
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const field = inp.id.replace('custom-', '');
+          setCustomValue(field, inp.value);
         }
       });
 

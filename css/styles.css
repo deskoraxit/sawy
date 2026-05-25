@@ -921,7 +921,7 @@ html[data-theme="dark"] .auth-card .btn.primary:hover{box-shadow:0 18px 28px rgb
   overflow:hidden;
 }
 .rec-full .page-head{
-  padding:0 0 10px;
+  padding:0 16px 10px;
   margin-bottom:0;
   flex-shrink:0;
 }

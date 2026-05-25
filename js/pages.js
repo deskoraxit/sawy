@@ -2727,7 +2727,7 @@ const NAIL_COLOR_HEX = {
   morado: '#7b2cbf',
 };
 
-const AI_SUGGESTIONS = [
+const AI_STYLES = [
   { nailType: 'almendradas', color: 'rojo', design: 'floral', label: 'Almendradas rojas florales', image: 'https://i.pinimg.com/736x/c6/eb/dc/c6ebdcc98e9c7e9e2390fbc1ab335d40.jpg' },
   { nailType: 'ovaladas', color: 'rosa', design: 'minimalista', label: 'Ovaladas rosas minimalistas', image: 'https://i.pinimg.com/736x/49/88/ec/4988ec2a2be1d2d8de1932da07ad0710.jpg' },
   { nailType: 'cuadradas', color: 'blanco', design: 'frances', label: 'Cuadradas blancas frances', image: 'https://i.pinimg.com/736x/f3/8b/f6/f38bf606962a0eef3cdfe5a1837a1bdb.jpg' },
@@ -2764,6 +2764,7 @@ export function recommendationsPage() {
     showCustom: { nailType: false, color: false, design: false },
     searchGen: 0,
     history: loadSearchHistory(),
+    pickedStyle: AI_STYLES[Math.floor(Math.random() * AI_STYLES.length)],
   };
 
   return {
@@ -2939,16 +2940,12 @@ export function recommendationsPage() {
 
                 <div class="ai-message ai-message-assistant fade-up">
                   <div class="ai-avatar">✨</div>
-                  <div class="ai-bubble" style="padding-bottom:10px">
-                    <div class="ai-q-label" style="font-size:.9rem;color:var(--primary-strong);margin-bottom:8px">Estilos que te recomendamos</div>
-                    <div class="ai-suggest-grid">
-                      ${AI_SUGGESTIONS.map((s) => `
-                        <button class="ai-suggest-card" data-suggestion="${escapeHTML(JSON.stringify(s)).replace(/"/g, '&quot;')}">
-                          <span class="ai-suggest-img" style="background-image:url(${escapeHTML(s.image)})"></span>
-                          <span class="ai-suggest-label">${escapeHTML(s.label)}</span>
-                        </button>
-                      `).join('')}
-                    </div>
+                  <div class="ai-bubble">
+                    <div class="ai-q-label" style="font-size:.9rem;color:var(--primary-strong);margin-bottom:10px">Estilo recomendado para ti</div>
+                    <button class="ai-suggest-card ai-suggest-single" data-suggestion="${escapeHTML(JSON.stringify(state.pickedStyle)).replace(/"/g, '&quot;')}">
+                      <span class="ai-suggest-img" style="background-image:url(${escapeHTML(state.pickedStyle.image)})"></span>
+                      <span class="ai-suggest-label">${escapeHTML(state.pickedStyle.label)}</span>
+                    </button>
                   </div>
                 </div>
 

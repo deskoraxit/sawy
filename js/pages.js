@@ -2747,7 +2747,7 @@ export function recommendationsPage() {
             <h1 class="page-title">Recomendaciones</h1>
             <p class="page-subtitle">Encuentra el diseño perfecto para tus uñas</p>
           </div>
-          <span class="bridge-status" id="bridge-status">⏳</span>
+          <span class="bridge-status" id="bridge-status" style="display:none">⏳</span>
         </div>
         <div id="recommendations-content"></div>
       </div>
@@ -2878,14 +2878,14 @@ export function recommendationsPage() {
             <div class="ai-chat-thread" id="rec-thread">
 
               ${state.step === 'form' ? `
-                <div class="ai-message ai-message-assistant">
+                <div class="ai-message ai-message-assistant fade-up">
                   <div class="ai-avatar">💅</div>
                   <div class="ai-bubble">
                     <div class="ai-q-label">Hola! Cuentame que unas quieres</div>
                     <div class="ai-q-sub">Selecciona una opcion o escribe la tuya. Buscare las mejores imagenes.</div>
 
-                    <div id="q-type">
-                      <div class="ai-q-num">1. Que forma prefieres?</div>
+                    <div id="q-type" class="ai-q-group stagger-1">
+                      <div class="ai-q-num">Que forma prefieres?</div>
                       <div class="ai-options">
                         ${NAIL_SHAPES.map((s) => `
                           <button class="ai-option${state.nailType === s.value ? ' selected' : ''}" data-field="nailType" data-value="${s.value}">${s.label}</button>
@@ -2907,8 +2907,8 @@ export function recommendationsPage() {
                     </div>
 
                     ${q1done ? `
-                      <div id="q-color">
-                        <div class="ai-q-num">2. Que color te gusta?</div>
+                      <div id="q-color" class="ai-q-group stagger-2">
+                        <div class="ai-q-num">Que color te gusta?</div>
                         <div class="ai-options">
                           ${NAIL_COLORS.map((c) => `
                             <button class="ai-option ai-color-opt${state.color === c.value ? ' selected' : ''}" data-field="color" data-value="${c.value}">
@@ -2934,8 +2934,8 @@ export function recommendationsPage() {
                     ` : ''}
 
                     ${q2done ? `
-                      <div id="q-design">
-                        <div class="ai-q-num">3. Que diseno prefieres?</div>
+                      <div id="q-design" class="ai-q-group stagger-3">
+                        <div class="ai-q-num">Que diseno prefieres?</div>
                         <div class="ai-options">
                           ${NAIL_DESIGNS.map((d) => `
                             <button class="ai-option${state.design === d.value ? ' selected' : ''}" data-field="design" data-value="${d.value}">${d.label}</button>
@@ -2961,11 +2961,13 @@ export function recommendationsPage() {
               ` : ''}
 
               ${state.loading ? `
-                <div class="ai-message ai-message-assistant">
-                  <div class="ai-avatar">⏳</div>
+                <div class="ai-message ai-message-assistant fade-up">
+                  <div class="ai-avatar">✨</div>
                   <div class="ai-bubble">
                     <strong>Buscando imagenes...</strong>
-                    <span>Espera un momento, ya casi.</span>
+                    <div class="ai-loading-dots">
+                      <span></span><span></span><span></span>
+                    </div>
                   </div>
                 </div>
               ` : ''}
@@ -2983,8 +2985,8 @@ export function recommendationsPage() {
                         <span>Toca una imagen para verla en grande o guárdala si te gusta.</span>
                       </div>
                       <div class="ai-results-grid">
-                        ${state.recommendations.map((rec) => `
-                          <article class="ai-rec-card js-rec-card" data-id="${escapeHTML(rec.id || '')}">
+                        ${state.recommendations.map((rec, i) => `
+                          <article class="ai-rec-card js-rec-card fade-up stagger-${Math.min(i + 1, 4)}" data-id="${escapeHTML(rec.id || '')}">
                             <img class="js-rec-preview" src="${escapeHTML(rec.imagen || '')}" alt="${escapeHTML(rec.nombre || 'Referencia')}" loading="lazy">
                             <div class="ai-rec-overlay">
                               <span class="badge neutral">Inspiración</span>
@@ -3001,10 +3003,10 @@ export function recommendationsPage() {
                     </div>
                   `}
                 </div>
-                <div class="ai-message ai-message-assistant" style="margin-top:4px">
-                  <div class="ai-avatar">🔄</div>
-                  <div class="ai-bubble" style="cursor:pointer;opacity:.7;padding:10px 14px" id="start-over">
-                    <span>Volver a empezar</span>
+                <div class="ai-message ai-message-assistant" style="margin-top:2px">
+                  <div class="ai-avatar" style="background:transparent;border:none;font-size:.7rem;width:28px;min-width:28px;flex:0 0 28px">↩</div>
+                  <div class="ai-bubble" style="cursor:pointer;padding:10px 16px;opacity:.65;transition:opacity .2s" id="start-over" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.65">
+                    <span style="color:var(--text);font-size:.85rem;font-weight:600">Volver a empezar</span>
                   </div>
                 </div>
               ` : ''}

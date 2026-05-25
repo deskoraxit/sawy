@@ -2775,9 +2775,31 @@ export function recommendationsPage() {
             <h1 class="page-title">Recomendaciones</h1>
             <p class="page-subtitle">Encuentra el diseño perfecto para tus uñas</p>
           </div>
-          <span class="bridge-status" id="bridge-status" style="display:none">⏳</span>
         </div>
-        <div id="recommendations-content"></div>
+        <div class="rec-search-tag fade-up">
+          <span class="rec-search-tag-icon">✦</span>
+          <span id="rec-search-text">almendradas rojo floral</span>
+        </div>
+        <div id="recommendations-content">
+          <div class="rec-suggest-card">
+            <div class="rec-suggest-left">
+              <div class="rec-suggest-icon-wrap">
+                <span class="rec-suggest-icon">✦</span>
+              </div>
+              <div class="rec-suggest-label">Estilo que te recomendamos</div>
+              <div class="rec-suggest-name" id="rec-suggest-name">Almendradas rojas florales</div>
+              <div class="rec-suggest-desc">Un diseño elegante, femenino y sofisticado que resalta la belleza natural de tus uñas.</div>
+              <div class="rec-suggest-badges">
+                <span class="rec-suggest-badge">✦ Ideal para cualquier ocasión</span>
+                <span class="rec-suggest-badge">✦ Combina con todo tu estilo</span>
+                <span class="rec-suggest-badge">✦ Tendencia y atemporal</span>
+              </div>
+            </div>
+            <div class="rec-suggest-right">
+              <div class="rec-suggest-img" id="rec-suggest-img" style="background-image:url('')"></div>
+            </div>
+          </div>
+        </div>
       </div>
     `,
     bind(root) {
@@ -2919,171 +2941,161 @@ export function recommendationsPage() {
         const q1done = Boolean(state.nailType);
         const q2done = Boolean(state.color);
         const q3done = state.design !== '';
+        const s = state.pickedStyle;
 
-        root.querySelector('#recommendations-content').innerHTML = `
-          <section class="ai-chat-shell">
-            <div class="ai-chat-thread" id="rec-thread">
+        // Update hero card
+        const imgEl = root.querySelector('#rec-suggest-img');
+        const nameEl = root.querySelector('#rec-suggest-name');
+        if (imgEl) imgEl.style.backgroundImage = `url(${escapeHTML(s.image)}`;
+        if (nameEl) nameEl.textContent = s.label;
+        const sugCard = root.querySelector('.rec-suggest-card');
+        if (sugCard) sugCard.dataset.suggestion = escapeHTML(JSON.stringify(s)).replace(/"/g, '&quot;');
 
-              ${state.step === 'form' ? `
-                ${state.history.length ? `
-                  <div class="ai-message ai-message-assistant fade-up" style="margin-bottom:-6px">
-                    <div class="ai-avatar" style="background:transparent;border:none;color:var(--muted);font-size:.7rem">↻</div>
-                    <div class="ai-history-bar">
-                      ${state.history.slice(0, 5).map((h) => `
-                        <button class="ai-history-chip" data-history="${escapeHTML(JSON.stringify(h)).replace(/"/g, '&quot;')}">
-                          ${escapeHTML(h.nailType || '')} ${escapeHTML(h.color || '')} ${escapeHTML(h.design || '')}
-                        </button>
-                      `).join('')}
-                    </div>
+        // Update search tag
+        const tagText = root.querySelector('#rec-search-text');
+        if (tagText) {
+          const parts = [state.nailType, state.color, state.design].filter(Boolean);
+          if (parts.length) {
+            tagText.textContent = parts.join(' · ');
+          } else {
+            const words = (s.label || '').toLowerCase().split(/\s+/);
+            tagText.textContent = words.slice(0, 3).join(' ');
+          }
+        }
+
+        // Generate chat card
+        let chatHtml = '';
+        const parts = [state.nailType, state.color, state.design].filter(Boolean);
+        const qText = parts.length ? `uñas ${parts.join(' ')}` : '';
+
+        if (state.step === 'form') {
+          chatHtml = `
+            ${state.history.length ? `
+              <div class="rec-history-line fade-up">
+                ${state.history.slice(0, 5).map((h) => `
+                  <button class="rec-history-chip" data-history="${escapeHTML(JSON.stringify(h)).replace(/"/g, '&quot;')}">
+                    ${escapeHTML(h.nailType || '')} ${escapeHTML(h.color || '')} ${escapeHTML(h.design || '')}
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <div class="rec-chat-card fade-up">
+              <div class="rec-chat-greeting">Hola! Cuentame que unas quieres</div>
+              <div class="rec-chat-sub">Selecciona una opcion o escribe la tuya. Buscare las mejores imagenes.</div>
+
+              <div class="rec-question">
+                <div class="rec-q-label">Que forma prefieres?</div>
+                <div class="rec-q-options">
+                  ${NAIL_SHAPES.map((opt) => `
+                    <button class="rec-q-btn${state.nailType === opt.value ? ' selected' : ''}" data-field="nailType" data-value="${opt.value}">${opt.label}</button>
+                  `).join('')}
+                  <button class="rec-q-btn rec-q-other${state.showCustom.nailType ? ' selected' : ''}" data-field="nailType" data-value="__custom__">Otra...</button>
+                </div>
+                ${state.showCustom.nailType ? `
+                  <div class="rec-custom-wrap">
+                    <input class="rec-custom-input" id="custom-nailType" type="text" placeholder="Escribe la forma que quieres" maxlength="40" autofocus>
+                    <span class="rec-custom-hint">Presiona Enter para confirmar</span>
                   </div>
                 ` : ''}
+                ${!state.showCustom.nailType && state.nailType && !NAIL_SHAPES.some((o) => o.value === state.nailType) ? `
+                  <div class="rec-custom-val">Elegiste: <strong>${escapeHTML(state.nailType)}</strong> <button class="rec-q-btn rec-q-other selected" data-field="nailType" data-value="__custom__">Cambiar</button></div>
+                ` : ''}
+              </div>
 
-                <div class="ai-message ai-message-assistant fade-up">
-                  <div class="ai-avatar">✨</div>
-                  <div class="ai-bubble">
-                    <div class="ai-q-label" style="font-size:.9rem;color:var(--primary-strong);margin-bottom:10px">Estilo recomendado para ti</div>
-                    <button class="ai-suggest-card ai-suggest-single" data-suggestion="${escapeHTML(JSON.stringify(state.pickedStyle)).replace(/"/g, '&quot;')}">
-                      <span class="ai-suggest-img" style="background-image:url(${escapeHTML(state.pickedStyle.image)})"></span>
-                      <span class="ai-suggest-label">${escapeHTML(state.pickedStyle.label)}</span>
-                    </button>
+              ${q1done ? `
+                <div class="rec-question">
+                  <div class="rec-q-label">Que color te gusta?</div>
+                  <div class="rec-q-options">
+                    ${NAIL_COLORS.map((c) => `
+                      <button class="rec-q-btn${state.color === c.value ? ' selected' : ''}" data-field="color" data-value="${c.value}">
+                        <span class="rec-color-dot" style="background:${NAIL_COLOR_HEX[c.value] || '#ccc'}"></span>
+                        ${c.label}
+                      </button>
+                    `).join('')}
+                    <button class="rec-q-btn rec-q-other${state.showCustom.color ? ' selected' : ''}" data-field="color" data-value="__custom__">Otra...</button>
                   </div>
-                </div>
-
-                <div class="ai-message ai-message-assistant fade-up">
-                  <div class="ai-avatar">💅</div>
-                  <div class="ai-bubble">
-                    <div class="ai-q-label">Hola! Cuentame que unas quieres</div>
-                    <div class="ai-q-sub">Selecciona una opcion o escribe la tuya. Buscare las mejores imagenes.</div>
-
-                    <div id="q-type" class="ai-q-group stagger-1">
-                      <div class="ai-q-num">Que forma prefieres?</div>
-                      <div class="ai-options">
-                        ${NAIL_SHAPES.map((s) => `
-                          <button class="ai-option${state.nailType === s.value ? ' selected' : ''}" data-field="nailType" data-value="${s.value}">${s.label}</button>
-                        `).join('')}
-                        <button class="ai-option ai-option-other${state.showCustom.nailType ? ' selected' : ''}" data-field="nailType" data-value="__custom__">Otra...</button>
-                      </div>
-                      ${state.showCustom.nailType ? `
-                        <div class="ai-custom-wrap">
-                          <input class="ai-custom-input" id="custom-nailType" type="text" placeholder="Escribe la forma que quieres" maxlength="40" autofocus>
-                          <p class="ai-custom-hint">Presiona Enter para confirmar</p>
-                        </div>
-                      ` : ''}
-                      ${!state.showCustom.nailType && state.nailType && !NAIL_SHAPES.some((s) => s.value === state.nailType) ? `
-                        <div class="ai-custom-value">
-                          Elegiste: <strong>${escapeHTML(state.nailType)}</strong>
-                          <button class="ai-option ai-option-other selected" data-field="nailType" data-value="__custom__">Cambiar</button>
-                        </div>
-                      ` : ''}
+                  ${state.showCustom.color ? `
+                    <div class="rec-custom-wrap">
+                      <input class="rec-custom-input" id="custom-color" type="text" placeholder="Escribe el color que quieres" maxlength="40" autofocus>
+                      <span class="rec-custom-hint">Presiona Enter para confirmar</span>
                     </div>
-
-                    ${q1done ? `
-                      <div id="q-color" class="ai-q-group stagger-2">
-                        <div class="ai-q-num">Que color te gusta?</div>
-                        <div class="ai-options">
-                          ${NAIL_COLORS.map((c) => `
-                            <button class="ai-option ai-color-opt${state.color === c.value ? ' selected' : ''}" data-field="color" data-value="${c.value}">
-                              <span class="ai-color-dot" style="background:${NAIL_COLOR_HEX[c.value] || '#ccc'}"></span>
-                              ${c.label}
-                            </button>
-                          `).join('')}
-                          <button class="ai-option ai-option-other${state.showCustom.color ? ' selected' : ''}" data-field="color" data-value="__custom__">Otra...</button>
-                        </div>
-                        ${state.showCustom.color ? `
-                          <div class="ai-custom-wrap">
-                            <input class="ai-custom-input" id="custom-color" type="text" placeholder="Escribe el color que quieres" maxlength="40" autofocus>
-                            <p class="ai-custom-hint">Presiona Enter para confirmar</p>
-                          </div>
-                        ` : ''}
-                        ${!state.showCustom.color && state.color && !NAIL_COLORS.some((c) => c.value === state.color) ? `
-                          <div class="ai-custom-value">
-                            Elegiste: <strong>${escapeHTML(state.color)}</strong>
-                            <button class="ai-option ai-option-other selected" data-field="color" data-value="__custom__">Cambiar</button>
-                          </div>
-                        ` : ''}
-                      </div>
-                    ` : ''}
-
-                    ${q2done ? `
-                      <div id="q-design" class="ai-q-group stagger-3">
-                        <div class="ai-q-num">Que diseno prefieres?</div>
-                        <div class="ai-options">
-                          ${NAIL_DESIGNS.map((d) => `
-                            <button class="ai-option${state.design === d.value ? ' selected' : ''}" data-field="design" data-value="${d.value}">${d.label}</button>
-                          `).join('')}
-                          <button class="ai-option ai-option-other${state.showCustom.design ? ' selected' : ''}" data-field="design" data-value="__custom__">Otra...</button>
-                        </div>
-                        ${state.showCustom.design ? `
-                          <div class="ai-custom-wrap">
-                            <input class="ai-custom-input" id="custom-design" type="text" placeholder="Escribe el diseno que buscas" maxlength="40" autofocus>
-                            <p class="ai-custom-hint">Presiona Enter para confirmar</p>
-                          </div>
-                        ` : ''}
-                        ${!state.showCustom.design && state.design && !NAIL_DESIGNS.some((d) => d.value === state.design) ? `
-                          <div class="ai-custom-value">
-                            Elegiste: <strong>${escapeHTML(state.design)}</strong>
-                            <button class="ai-option ai-option-other selected" data-field="design" data-value="__custom__">Cambiar</button>
-                          </div>
-                        ` : ''}
-                      </div>
-                    ` : ''}
-                  </div>
+                  ` : ''}
+                  ${!state.showCustom.color && state.color && !NAIL_COLORS.some((c) => c.value === state.color) ? `
+                    <div class="rec-custom-val">Elegiste: <strong>${escapeHTML(state.color)}</strong> <button class="rec-q-btn rec-q-other selected" data-field="color" data-value="__custom__">Cambiar</button></div>
+                  ` : ''}
                 </div>
               ` : ''}
 
-              ${state.loading ? `
-                <div class="ai-message ai-message-assistant fade-up">
-                  <div class="ai-avatar">✨</div>
-                  <div class="ai-bubble">
-                    <strong>Buscando imagenes...</strong>
-                    <div class="ai-loading-dots">
-                      <span></span><span></span><span></span>
-                    </div>
+              ${q2done ? `
+                <div class="rec-question">
+                  <div class="rec-q-label">Que diseno prefieres?</div>
+                  <div class="rec-q-options">
+                    ${NAIL_DESIGNS.map((d) => `
+                      <button class="rec-q-btn${state.design === d.value ? ' selected' : ''}" data-field="design" data-value="${d.value}">${d.label}</button>
+                    `).join('')}
+                    <button class="rec-q-btn rec-q-other${state.showCustom.design ? ' selected' : ''}" data-field="design" data-value="__custom__">Otra...</button>
                   </div>
+                  ${state.showCustom.design ? `
+                    <div class="rec-custom-wrap">
+                      <input class="rec-custom-input" id="custom-design" type="text" placeholder="Escribe el diseno que buscas" maxlength="40" autofocus>
+                      <span class="rec-custom-hint">Presiona Enter para confirmar</span>
+                    </div>
+                  ` : ''}
+                  ${!state.showCustom.design && state.design && !NAIL_DESIGNS.some((d) => d.value === state.design) ? `
+                    <div class="rec-custom-val">Elegiste: <strong>${escapeHTML(state.design)}</strong> <button class="rec-q-btn rec-q-other selected" data-field="design" data-value="__custom__">Cambiar</button></div>
+                  ` : ''}
                 </div>
               ` : ''}
+            </div>`;
+        }
 
-              ${state.step === 'results' && !state.loading ? `
-                <div class="ai-message ai-message-user">
-                  <div class="ai-bubble">${escapeHTML(`uñas ${[state.nailType, state.color, state.design].filter(Boolean).join(' ')}`)}</div>
-                </div>
-                <div class="ai-message ai-message-assistant">
-                  <div class="ai-avatar">✨</div>
-                  ${state.recommendations.length ? `
-                    <div style="flex:1;min-width:0">
-                      <div class="ai-bubble" style="margin-bottom:10px">
-                        <strong>${state.recommendations.length} referencias para ti</strong>
-                        <span>Toca una imagen para verla en grande o guárdala si te gusta.</span>
-                      </div>
-                      <div class="ai-results-grid">
-                        ${state.recommendations.map((rec, i) => `
-                          <article class="ai-rec-card js-rec-card fade-up stagger-${Math.min(i + 1, 4)}" data-id="${escapeHTML(rec.id || '')}">
-                            <img class="js-rec-preview" src="${escapeHTML(rec.imagen || '')}" alt="${escapeHTML(rec.nombre || 'Referencia')}" loading="lazy">
-                            <div class="ai-rec-overlay">
-                              <span class="badge neutral">Inspiración</span>
-                              <button class="btn sm primary js-save-rec" type="button" data-id="${escapeHTML(rec.id || '')}">Guardar</button>
-                            </div>
-                          </article>
-                        `).join('')}
-                      </div>
-                    </div>
-                  ` : `
-                    <div class="ai-bubble">
-                      <strong>No encontre resultados</strong>
-                      <span>Prueba con otras opciones o intenta de nuevo.</span>
-                    </div>
-                  `}
-                </div>
-                <div class="ai-message ai-message-assistant" style="margin-top:2px">
-                  <div class="ai-avatar" style="background:transparent;border:none;font-size:.7rem;width:28px;min-width:28px;flex:0 0 28px">↩</div>
-                  <div class="ai-bubble" style="cursor:pointer;padding:10px 16px;opacity:.65;transition:opacity .2s" id="start-over" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.65">
-                    <span style="color:var(--text);font-size:.85rem;font-weight:600">Volver a empezar</span>
-                  </div>
-                </div>
-              ` : ''}
+        if (state.loading) {
+          chatHtml = `
+            <div class="rec-chat-card fade-up" style="text-align:center;padding:40px">
+              <strong style="display:block;margin-bottom:10px">Buscando imagenes...</strong>
+              <div class="rec-loading-dots"><span></span><span></span><span></span></div>
+            </div>`;
+        }
 
-            </div>
-          </section>`;
+        if (state.step === 'results' && !state.loading) {
+          chatHtml = `
+            <div class="rec-chat-card fade-up">
+              <div class="rec-result-header">
+                <strong>${state.recommendations.length} referencias para ti</strong>
+                <span>Toca una imagen para verla en grande o guardala si te gusta.</span>
+              </div>
+              ${state.recommendations.length ? `
+                <div class="rec-result-grid">
+                  ${state.recommendations.map((rec, i) => `
+                    <article class="rec-result-card js-rec-card fade-up stagger-${Math.min(i + 1, 4)}" data-id="${escapeHTML(rec.id || '')}">
+                      <img class="js-rec-preview" src="${escapeHTML(rec.imagen || '')}" alt="${escapeHTML(rec.nombre || 'Referencia')}" loading="lazy">
+                      <div class="rec-result-overlay">
+                        <span class="rec-result-badge">Inspiracion</span>
+                        <button class="rec-result-save js-save-rec" type="button" data-id="${escapeHTML(rec.id || '')}">Guardar</button>
+                      </div>
+                    </article>
+                  `).join('')}
+                </div>
+              ` : `
+                <div class="rec-result-empty">
+                  <strong>No encontre resultados</strong>
+                  <span>Prueba con otras opciones o intenta de nuevo.</span>
+                </div>
+              `}
+              <button class="rec-start-over" id="start-over">← Volver a empezar</button>
+            </div>`;
+        }
+
+        let existing = root.querySelector('.rec-chat-area');
+        if (existing) {
+          existing.innerHTML = chatHtml;
+        } else {
+          const area = document.createElement('div');
+          area.className = 'rec-chat-area';
+          area.innerHTML = chatHtml;
+          root.querySelector('#recommendations-content').appendChild(area);
+        }
       };
 
       if (loadResultsFromCache()) {
@@ -3137,7 +3149,7 @@ export function recommendationsPage() {
           return;
         }
 
-        const opt = e.target.closest('.ai-option');
+        const opt = e.target.closest('.rec-q-btn');
         if (opt) {
           select(opt.dataset.field, opt.dataset.value);
           return;
@@ -3197,7 +3209,7 @@ export function recommendationsPage() {
       });
 
       root.addEventListener('keydown', (e) => {
-        const inp = e.target.closest('.ai-custom-input');
+        const inp = e.target.closest('.rec-custom-input');
         if (!inp) return;
         if (e.key === 'Enter') {
           e.preventDefault();

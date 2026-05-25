@@ -952,26 +952,32 @@ html[data-theme="dark"] .auth-card .btn.primary:hover{box-shadow:0 18px 28px rgb
 .rec-search-tag{
   display:inline-flex;
   align-items:center;
-  gap:5px;
-  padding:5px 13px;
+  gap:6px;
+  padding:6px 16px;
   border-radius:999px;
   border:1px solid rgba(183,143,255,.15);
   background:#fff;
-  box-shadow:0 1px 6px rgba(143,99,220,.03);
   margin-bottom:18px;
-  font-size:.72rem;
+  font-size:.82rem;
   color:#475569;
   font-weight:500;
+  max-width:360px;
+  overflow:hidden;
 }
 .rec-search-tag-icon{
   color:#b78fff;
-  font-size:.65rem;
+  font-size:.7rem;
   flex:0 0 auto;
+}
+#rec-search-text{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 html[data-theme="dark"] .rec-search-tag{
   background:rgba(15,23,42,.94);
   border-color:rgba(148,163,184,.1);
-  color:#e2e8f0;
+  color:#94a3b8;
 }
 
 /* ── Hero suggestion card ── */

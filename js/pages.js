@@ -2771,6 +2771,7 @@ export function recommendationsPage() {
     html: `
       <div class="rec-full">
         <div class="page-head">
+          <div class="rec-page-icon" aria-hidden="true">✦</div>
           <div>
             <h1 class="page-title">Recomendaciones</h1>
             <p class="page-subtitle">Encuentra el diseño perfecto para tus uñas</p>
@@ -2946,7 +2947,7 @@ export function recommendationsPage() {
         // Update hero card
         const imgEl = root.querySelector('#rec-suggest-img');
         const nameEl = root.querySelector('#rec-suggest-name');
-        if (imgEl) imgEl.style.backgroundImage = `url(${escapeHTML(s.image)}`;
+        if (imgEl) imgEl.style.backgroundImage = `url("${escapeHTML(s.image)}")`;
         if (nameEl) nameEl.textContent = s.label;
         const sugCard = root.querySelector('.rec-suggest-card');
         if (sugCard) sugCard.dataset.suggestion = escapeHTML(JSON.stringify(s)).replace(/"/g, '&quot;');
@@ -2981,11 +2982,16 @@ export function recommendationsPage() {
             ` : ''}
 
             <div class="rec-chat-card fade-up">
-              <div class="rec-chat-greeting">Hola! Cuentame que unas quieres</div>
-              <div class="rec-chat-sub">Selecciona una opcion o escribe la tuya. Buscare las mejores imagenes.</div>
+              <div class="rec-chat-head">
+                <span class="rec-chat-icon" aria-hidden="true">♥</span>
+                <div>
+                  <div class="rec-chat-greeting">¡Hola! Cuéntame que uñas quieres</div>
+                  <div class="rec-chat-sub">Selecciona una opción o escribe la tuya. Buscaré las mejores imágenes.</div>
+                </div>
+              </div>
 
               <div class="rec-question">
-                <div class="rec-q-label">Que forma prefieres?</div>
+                <div class="rec-q-label"><span>1</span> ¿Qué forma prefieres?</div>
                 <div class="rec-q-options">
                   ${NAIL_SHAPES.map((opt) => `
                     <button class="rec-q-btn${state.nailType === opt.value ? ' selected' : ''}" data-field="nailType" data-value="${opt.value}">${opt.label}</button>
@@ -3005,7 +3011,7 @@ export function recommendationsPage() {
 
               ${q1done ? `
                 <div class="rec-question">
-                  <div class="rec-q-label">Que color te gusta?</div>
+                  <div class="rec-q-label"><span>2</span> ¿Qué color te gusta?</div>
                   <div class="rec-q-options">
                     ${NAIL_COLORS.map((c) => `
                       <button class="rec-q-btn${state.color === c.value ? ' selected' : ''}" data-field="color" data-value="${c.value}">
@@ -3029,7 +3035,7 @@ export function recommendationsPage() {
 
               ${q2done ? `
                 <div class="rec-question">
-                  <div class="rec-q-label">Que diseno prefieres?</div>
+                  <div class="rec-q-label"><span>3</span> ¿Qué diseño prefieres?</div>
                   <div class="rec-q-options">
                     ${NAIL_DESIGNS.map((d) => `
                       <button class="rec-q-btn${state.design === d.value ? ' selected' : ''}" data-field="design" data-value="${d.value}">${d.label}</button>
